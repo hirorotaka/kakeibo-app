@@ -13,21 +13,16 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close'; // 閉じるボタン用のアイコン
-import FastfoodIcon from '@mui/icons-material/Fastfood'; //食事アイコン
-import AlarmIcon from '@mui/icons-material/Alarm'; //日用品アイコン
-import AddHomeIcon from '@mui/icons-material/AddHome'; //住居費アイコン
-import Diversity3Icon from '@mui/icons-material/Diversity3'; //交際費アイコン
-import SportsTennisIcon from '@mui/icons-material/SportsTennis'; //娯楽アイコン
-
-import WorkIcon from '@mui/icons-material/Work'; //給与アイコン
-import AddBusinessIcon from '@mui/icons-material/AddBusiness'; //副収入アイコン
-import SavingsIcon from '@mui/icons-material/Savings'; //お小遣いアイコン
-import { Controller, useForm, SubmitHandler } from 'react-hook-form';
 import { useEffect, useState } from 'react';
-import { ExpenseCategory, IncomeCategory } from '../types';
+import CloseIcon from '@mui/icons-material/Close'; // 閉じるボタン用のアイコン
+import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Schema, TransactionSchema } from '../validations/schema';
+import { TransactionSchema } from '../validations/schema';
+import {
+  expenseCategories,
+  formWidth,
+  incomeCategories,
+} from '../utils/constants/formConstants.tsx';
 
 interface TransactionFormProps {
   onCloseForm: () => void;
@@ -35,49 +30,7 @@ interface TransactionFormProps {
   currentDay: string;
 }
 
-interface CategoryItem {
-  label: IncomeCategory | ExpenseCategory;
-  icon: JSX.Element;
-}
-
 type IncomeExpenseType = 'income' | 'expense';
-
-const expenseCategories: CategoryItem[] = [
-  {
-    label: '食費',
-    icon: <FastfoodIcon fontSize="small" />,
-  },
-  {
-    label: '日用品',
-    icon: <AlarmIcon fontSize="small" />,
-  },
-  {
-    label: '住居費',
-    icon: <AddHomeIcon fontSize="small" />,
-  },
-  {
-    label: '交際費',
-    icon: <Diversity3Icon fontSize="small" />,
-  },
-  {
-    label: '娯楽',
-    icon: <SportsTennisIcon fontSize="small" />,
-  },
-];
-const incomeCategories: CategoryItem[] = [
-  {
-    label: '給与',
-    icon: <WorkIcon fontSize="small" />,
-  },
-  {
-    label: '副収入',
-    icon: <SavingsIcon fontSize="small" />,
-  },
-  {
-    label: 'お小遣い',
-    icon: <AddBusinessIcon fontSize="small" />,
-  },
-];
 
 const TransactionForm = ({
   onCloseForm,
@@ -102,7 +55,7 @@ const TransactionForm = ({
     resolver: zodResolver(TransactionSchema),
   });
 
-  const onSubmit: SubmitHandler<Schema> = (data) => {
+  const onSubmit = (data) => {
     console.log(data);
   };
 
@@ -124,8 +77,6 @@ const TransactionForm = ({
     setCategories(newCategories);
     setValue('category', '');
   }, [currentType]);
-
-  const formWidth = 320;
 
   return (
     <Box
