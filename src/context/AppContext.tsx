@@ -25,6 +25,7 @@ interface AppContextType {
     transaction: Schema,
     transactionId: string
   ) => Promise<void>;
+  isLoading: boolean;
 }
 
 export const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -36,6 +37,7 @@ export const AppcontextProvider = ({
 }) => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchTransactions = async () => {
@@ -57,6 +59,7 @@ export const AppcontextProvider = ({
           console.error('一般的なエラー', err);
         }
       } finally {
+        setIsLoading(false);
       }
     };
 
@@ -141,6 +144,7 @@ export const AppcontextProvider = ({
         onSaveTransaction,
         onDeleteTransaction,
         onUpdateTransaction,
+        isLoading,
       }}
     >
       {children}
