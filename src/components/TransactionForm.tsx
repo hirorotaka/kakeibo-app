@@ -19,9 +19,12 @@ import SportsTennisIcon from '@mui/icons-material/SportsTennis'; //娯楽アイ�
 import WorkIcon from '@mui/icons-material/Work'; //給与アイコン
 import AddBusinessIcon from '@mui/icons-material/AddBusiness'; //副収入アイコン
 import SavingsIcon from '@mui/icons-material/Savings'; //お小遣いアイコン
-import { Controller, useForm } from 'react-hook-form';
+import { Controller, useForm, SubmitHandler } from 'react-hook-form';
 import { useEffect, useState } from 'react';
 import { ExpenseCategory, IncomeCategory } from '../types';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Schema, TransactionSchema } from '../validations/schema';
+
 interface TransactionFormProps {
   onCloseForm: () => void;
   isEntryDrawerOpen: boolean;
@@ -78,7 +81,13 @@ const TransactionForm = ({
   currentDay,
 }: TransactionFormProps) => {
   const [categories, setCategories] = useState(expenseCategories);
-  const { control, setValue, watch } = useForm({
+  const {
+    control,
+    setValue,
+    watch,
+    formState: { errors },
+    handleSubmit,
+  } = useForm({
     defaultValues: {
       type: 'expense',
       date: currentDay,
@@ -86,7 +95,14 @@ const TransactionForm = ({
       content: '',
       amount: 0,
     },
+    resolver: zodResolver(TransactionSchema),
   });
+
+  const onSubmit: SubmitHandler<Schema> = (data) => {
+    console.log(data);
+  };
+
+  console.log(errors);
 
   const incomeExpenseToggle = (type: IncomeExpenseType): void => {
     setValue('type', type);
@@ -143,7 +159,7 @@ const TransactionForm = ({
         </IconButton>
       </Box>
       {/* フォーム要素 */}
-      <Box component={'form'}>
+      <Box component={'form'} onSubmit={handleSubmit(onSubmit)}>
         <Stack spacing={2}>
           {/* 収支切り替えボタン */}
           <Controller
