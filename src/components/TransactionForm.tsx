@@ -15,14 +15,15 @@ import {
 } from '@mui/material';
 import { useEffect, useState } from 'react';
 import CloseIcon from '@mui/icons-material/Close'; // 閉じるボタン用のアイコン
-import { Controller, useForm } from 'react-hook-form';
+import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { TransactionSchema } from '../validations/schema';
+import { Schema, TransactionSchema } from '../validations/schema';
 import {
   expenseCategories,
   formWidth,
   incomeCategories,
 } from '../utils/constants/formConstants.tsx';
+import { useAppContext } from '../context/AppContext.tsx';
 
 interface TransactionFormProps {
   onCloseForm: () => void;
@@ -37,6 +38,7 @@ const TransactionForm = ({
   isEntryDrawerOpen,
   currentDay,
 }: TransactionFormProps) => {
+  const { onSaveTransaction } = useAppContext();
   const [categories, setCategories] = useState(expenseCategories);
   const {
     control,
@@ -44,24 +46,33 @@ const TransactionForm = ({
     watch,
     formState: { errors },
     handleSubmit,
-  } = useForm({
+    reset,
+  } = useForm<Schema>({
     defaultValues: {
       type: 'expense',
       date: currentDay,
-      category: '',
+      category: '' as Schema['category'],
       content: '',
       amount: 0,
     },
     resolver: zodResolver(TransactionSchema),
   });
 
-  const onSubmit = (data) => {
-    console.log(data);
+  const onSubmit: SubmitHandler<Schema> = (data) => {
+    onSaveTransaction(data);
+    reset({
+      type: 'expense',
+      date: currentDay,
+      amount: 0,
+      category: '' as Schema['category'],
+      content: '',
+    });
   };
 
+  // 収支タイプを切り替える
   const incomeExpenseToggle = (type: IncomeExpenseType): void => {
     setValue('type', type);
-    setValue('category', '');
+    setValue('category', '' as Schema['category']);
   };
 
   // 収支タイプを監視
@@ -75,7 +86,7 @@ const TransactionForm = ({
     const newCategories =
       currentType === 'income' ? incomeCategories : expenseCategories;
     setCategories(newCategories);
-    setValue('category', '');
+    setValue('category', '' as Schema['category']);
   }, [currentType]);
 
   return (
