@@ -133,9 +133,22 @@ const TransactionForm = ({
 
   useEffect(() => {
     if (selectedTransaction) {
+      const categoryExisits = categories.some(
+        (category) => category.label === selectedTransaction.category
+      );
+      setValue(
+        'category',
+        categoryExisits
+          ? selectedTransaction.category
+          : ('' as Schema['category'])
+      );
+    }
+  }, [selectedTransaction, categories]);
+
+  useEffect(() => {
+    if (selectedTransaction) {
       setValue('type', selectedTransaction.type);
       setValue('date', selectedTransaction.date);
-      setValue('category', selectedTransaction.category);
       setValue('content', selectedTransaction.content);
       setValue('amount', selectedTransaction.amount);
     } else {
