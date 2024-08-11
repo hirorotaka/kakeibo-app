@@ -3,17 +3,36 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFnsV3';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { ja } from 'date-fns/locale';
+import { useAppContext } from '../context/AppContext';
+import { addMonths } from 'date-fns';
 
 const MonthSelector = () => {
+  const { currentMonth, setCurrentMonth } = useAppContext();
+
+  const handlePreviousMonth = () => {
+    const previosMonth = addMonths(currentMonth, -1);
+    setCurrentMonth(previosMonth);
+  };
+
+  const handleNextMonth = () => {
+    const previosMonth = addMonths(currentMonth, +1);
+    setCurrentMonth(previosMonth);
+  };
+
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ja}>
       <Box
         sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}
       >
-        <Button color={'error'} variant="contained">
+        <Button
+          onClick={handlePreviousMonth}
+          color={'error'}
+          variant="contained"
+        >
           先月
         </Button>
         <DatePicker
+          value={currentMonth}
           label="年月を選択"
           sx={{ mx: 2, backgroundColor: 'white' }}
           views={['year', 'month']}
@@ -23,7 +42,7 @@ const MonthSelector = () => {
             calendarHeader: { format: 'yyyy/MM' },
           }}
         />
-        <Button color={'primary'} variant="contained">
+        <Button onClick={handleNextMonth} color={'primary'} variant="contained">
           翌月
         </Button>
       </Box>
