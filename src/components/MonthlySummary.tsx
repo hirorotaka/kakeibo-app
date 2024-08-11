@@ -3,8 +3,15 @@ import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import { formatCurrency } from '../utils/formatting';
+import { Transaction } from '../types';
+import financeCalculations from '../utils/financeCalculations';
 
-const MonthlySummary = () => {
+interface MonthlySummaryProps {
+  monthlyTransactions: Transaction[];
+}
+
+const MonthlySummary = ({ monthlyTransactions }: MonthlySummaryProps) => {
+  const { income, expense, balance } = financeCalculations(monthlyTransactions);
   return (
     <Grid container spacing={{ xs: 1, sm: 2, md: 3 }} mb={2}>
       {/* 収入 */}
@@ -31,7 +38,7 @@ const MonthlySummary = () => {
                 fontSize: { xs: '.8rem', sm: '1rem', md: '1.2rem' },
               }}
             >
-              {`¥${formatCurrency(10000)}`}
+              {`¥${formatCurrency(income)}`}
             </Typography>
           </CardContent>
         </Card>
@@ -60,7 +67,7 @@ const MonthlySummary = () => {
                 fontSize: { xs: '.8rem', sm: '1rem', md: '1.2rem' },
               }}
             >
-              {`¥${formatCurrency(20000)}`}
+              {`¥${formatCurrency(expense)}`}
             </Typography>
           </CardContent>
         </Card>
@@ -89,7 +96,7 @@ const MonthlySummary = () => {
                 fontSize: { xs: '.8rem', sm: '1rem', md: '1.2rem' },
               }}
             >
-              {`¥${formatCurrency(30000)}`}
+              {`¥${formatCurrency(balance)}`}
             </Typography>
           </CardContent>
         </Card>
