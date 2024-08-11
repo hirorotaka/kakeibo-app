@@ -3,15 +3,13 @@ import MonthlySummary from '../components/MonthlySummary';
 import Calendar from '../components/Calendar';
 import TransactionMenu from '../components/TransactionMenu';
 import TransactionForm from '../components/TransactionForm';
-import { Transaction } from '../types';
 import { useState } from 'react';
 import { format } from 'date-fns';
-interface HomeProps {
-  monthlyTransactions: Transaction[];
-  setCurrentMonth: React.Dispatch<React.SetStateAction<Date>>;
-}
+import useMonthlyTransactions from '../hooks/useMonthlyTransactions';
 
-const Home = ({ monthlyTransactions, setCurrentMonth }: HomeProps) => {
+const Home = () => {
+  const monthlyTransactions = useMonthlyTransactions();
+
   const today = format(new Date(), 'yyyy-MM-dd');
   const [currentDay, setCurrentDay] = useState(today);
   const [isEntryDrawerOpen, setIsEntryDrawerOpen] = useState(false);
@@ -33,10 +31,8 @@ const Home = ({ monthlyTransactions, setCurrentMonth }: HomeProps) => {
     <Box sx={{ display: 'flex' }}>
       {/* 左側コンテンツ */}
       <Box sx={{ flexGrow: 1 }}>
-        <MonthlySummary monthlyTransactions={monthlyTransactions} />
+        <MonthlySummary />
         <Calendar
-          monthlyTransactions={monthlyTransactions}
-          setCurrentMonth={setCurrentMonth}
           setCurrentDay={setCurrentDay}
           currentDay={currentDay}
           today={today}

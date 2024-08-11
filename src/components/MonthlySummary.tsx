@@ -3,14 +3,11 @@ import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import { formatCurrency } from '../utils/formatting';
-import { Transaction } from '../types';
 import financeCalculations from '../utils/financeCalculations';
+import useMonthlyTransactions from '../hooks/useMonthlyTransactions';
 
-interface MonthlySummaryProps {
-  monthlyTransactions: Transaction[];
-}
-
-const MonthlySummary = ({ monthlyTransactions }: MonthlySummaryProps) => {
+const MonthlySummary = () => {
+  const monthlyTransactions = useMonthlyTransactions();
   const { income, expense, balance } = financeCalculations(monthlyTransactions);
   return (
     <Grid container spacing={{ xs: 1, sm: 2, md: 3 }} mb={2}>
