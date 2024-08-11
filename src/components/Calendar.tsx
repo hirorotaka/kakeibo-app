@@ -11,6 +11,7 @@ interface CalendarProps {
   setCurrentMonth: React.Dispatch<React.SetStateAction<Date>>;
   currentDay: string;
   setCurrentDay: React.Dispatch<React.SetStateAction<string>>;
+  today: string;
 }
 
 const Calendar = ({
@@ -18,6 +19,7 @@ const Calendar = ({
   setCurrentMonth,
   setCurrentDay,
   currentDay,
+  today,
 }: CalendarProps) => {
   // 日付ごとの収支を計算する
   const dailyBalances = calculateDailyBalance(monthlyTransactions);
@@ -33,6 +35,7 @@ const Calendar = ({
     setCurrentMonth,
     setCurrentDay,
     currentDay,
+    today,
   });
 
   return (

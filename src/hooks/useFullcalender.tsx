@@ -3,12 +3,14 @@ import { EventContentArg, DatesSetArg } from '@fullcalendar/core';
 import { DateClickArg } from '@fullcalendar/interaction';
 import { formatCurrency } from '../utils/formatting';
 import { useTheme } from '@mui/material';
+import { isSameMonth } from 'date-fns';
 
 interface useFullcalenderProps {
   dailyBalances: Record<string, Balance>;
   setCurrentMonth: React.Dispatch<React.SetStateAction<Date>>;
   setCurrentDay: React.Dispatch<React.SetStateAction<string>>;
   currentDay: string;
+  today: string;
 }
 
 const useFullcalender = ({
@@ -16,6 +18,7 @@ const useFullcalender = ({
   setCurrentMonth,
   setCurrentDay,
   currentDay,
+  today,
 }: useFullcalenderProps) => {
   const theme = useTheme();
   // FullCalendar用のイベントを生成する関数
@@ -59,6 +62,10 @@ const useFullcalender = ({
   const handleDateSet = (datesetInfo: DatesSetArg) => {
     const currentMonth = datesetInfo.view.currentStart;
     setCurrentMonth(currentMonth);
+    const todayDate = new Date();
+    if (isSameMonth(todayDate, currentMonth)) {
+      setCurrentDay(today);
+    }
   };
 
   // 現在の日付を選択したときの処理
