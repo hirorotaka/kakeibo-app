@@ -1,7 +1,14 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { Schema } from '../validations/schema';
 import { Transaction } from '../types';
-import { addDoc, collection, getDocs } from 'firebase/firestore';
+import {
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
+  getDocs,
+  updateDoc,
+} from 'firebase/firestore';
 import { db } from '../firebase';
 import { isFirestoreError } from '../utils/errorHandling';
 
@@ -11,6 +18,13 @@ interface AppContextType {
   currentMonth: Date;
   setCurrentMonth: React.Dispatch<React.SetStateAction<Date>>;
   onSaveTransaction: (transaction: Schema) => Promise<void>;
+  onDeleteTransaction: (
+    transactionIds: string | readonly string[]
+  ) => Promise<void>;
+  onUpdateTransaction: (
+    transaction: Schema,
+    transactionId: string
+  ) => Promise<void>;
 }
 
 export const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -70,6 +84,53 @@ export const AppcontextProvider = ({
     }
   };
 
+  const onDeleteTransaction = async (
+    transactionIds: string | readonly string[]
+  ) => {
+    try {
+      const idsToDelete = Array.isArray(transactionIds)
+        ? transactionIds
+        : [transactionIds];
+
+      for (const id of idsToDelete) {
+        await deleteDoc(doc(db, 'Transactions', id));
+      }
+
+      const fileterdTransactions = transactions.filter(
+        (transaction) => !idsToDelete.includes(transaction.id)
+      );
+      setTransactions(fileterdTransactions);
+    } catch (err) {
+      if (isFirestoreError(err)) {
+        console.error('firestoreのエラーは', err.message);
+      } else {
+        console.error('一般的なエラー', err);
+      }
+    }
+  };
+
+  const onUpdateTransaction = async (
+    transaction: Schema,
+    transactionId: string
+  ) => {
+    try {
+      const docRef = doc(db, 'Transactions', transactionId);
+
+      // Set the "capital" field of the city 'DC'
+      await updateDoc(docRef, transaction);
+      const updatedTransactions = transactions.map((t) =>
+        t.id === transactionId ? { ...t, ...transaction } : t
+      ) as Transaction[];
+      setTransactions(updatedTransactions);
+    } catch (err) {
+      if (isFirestoreError(err)) {
+        console.error('firestoreのエラーは', err.message);
+      } else {
+        console.error('一般的なエラー', err);
+      }
+    }
+  };
+
   return (
     <AppContext.Provider
       value={{
@@ -78,6 +139,8 @@ export const AppcontextProvider = ({
         currentMonth,
         setCurrentMonth,
         onSaveTransaction,
+        onDeleteTransaction,
+        onUpdateTransaction,
       }}
     >
       {children}

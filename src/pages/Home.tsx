@@ -38,7 +38,6 @@ const Home = () => {
 
   // 取引が選択された時の処理
   const handleSelectTransaction = (transaction: Transaction) => {
-    console.log(transaction);
     setIsEntryDrawerOpen(true);
     setSelectedTransaction(transaction);
   };
@@ -67,6 +66,7 @@ const Home = () => {
           isEntryDrawerOpen={isEntryDrawerOpen}
           currentDay={currentDay}
           selectedTransaction={selectedTransaction}
+          setSelectedTransaction={setSelectedTransaction}
         />
       </Box>
     </Box>

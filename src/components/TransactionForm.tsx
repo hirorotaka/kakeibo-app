@@ -31,6 +31,9 @@ interface TransactionFormProps {
   isEntryDrawerOpen: boolean;
   currentDay: string;
   selectedTransaction: Transaction | null;
+  setSelectedTransaction: React.Dispatch<
+    React.SetStateAction<Transaction | null>
+  >;
 }
 
 type IncomeExpenseType = 'income' | 'expense';
@@ -40,8 +43,10 @@ const TransactionForm = ({
   isEntryDrawerOpen,
   currentDay,
   selectedTransaction,
+  setSelectedTransaction,
 }: TransactionFormProps) => {
-  const { onSaveTransaction } = useAppContext();
+  const { onSaveTransaction, onDeleteTransaction, onUpdateTransaction } =
+    useAppContext();
   const [categories, setCategories] = useState(expenseCategories);
   const {
     control,
@@ -62,7 +67,26 @@ const TransactionForm = ({
   });
 
   const onSubmit: SubmitHandler<Schema> = (data) => {
-    onSaveTransaction(data);
+    if (selectedTransaction) {
+      onUpdateTransaction(data, selectedTransaction.id)
+        .then(() => {
+          console.log('更新しました');
+          setSelectedTransaction(null);
+        })
+        .catch((err) => {
+          console.error('更新に失敗しました', err);
+        });
+    } else {
+      onSaveTransaction(data)
+        .then(() => {
+          console.log('更新しました');
+          setSelectedTransaction(null);
+        })
+        .catch((err) => {
+          console.error('更新に失敗しました', err);
+        });
+    }
+
     reset({
       type: 'expense',
       date: currentDay,
@@ -76,6 +100,21 @@ const TransactionForm = ({
   const incomeExpenseToggle = (type: IncomeExpenseType): void => {
     setValue('type', type);
     setValue('category', '' as Schema['category']);
+  };
+
+  const handleDelete = () => {
+    if (selectedTransaction) {
+      onDeleteTransaction(selectedTransaction.id);
+      setSelectedTransaction(null);
+    }
+
+    reset({
+      type: 'expense',
+      date: currentDay,
+      amount: 0,
+      category: '' as Schema['category'],
+      content: '',
+    });
   };
 
   // 収支タイプを監視
@@ -250,8 +289,19 @@ const TransactionForm = ({
             color={currentType === 'income' ? 'primary' : 'error'}
             fullWidth
           >
-            保存
+            {selectedTransaction ? '更新' : '保存'}
           </Button>
+
+          {selectedTransaction && (
+            <Button
+              onClick={handleDelete}
+              variant="outlined"
+              color={'secondary'}
+              fullWidth
+            >
+              削除
+            </Button>
+          )}
         </Stack>
       </Box>
     </Box>
