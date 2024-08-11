@@ -24,11 +24,13 @@ import {
   incomeCategories,
 } from '../utils/constants/formConstants.tsx';
 import { useAppContext } from '../context/AppContext.tsx';
+import { Transaction } from '../types/index.ts';
 
 interface TransactionFormProps {
   onCloseForm: () => void;
   isEntryDrawerOpen: boolean;
   currentDay: string;
+  selectedTransaction: Transaction | null;
 }
 
 type IncomeExpenseType = 'income' | 'expense';
@@ -37,6 +39,7 @@ const TransactionForm = ({
   onCloseForm,
   isEntryDrawerOpen,
   currentDay,
+  selectedTransaction,
 }: TransactionFormProps) => {
   const { onSaveTransaction } = useAppContext();
   const [categories, setCategories] = useState(expenseCategories);
@@ -88,6 +91,24 @@ const TransactionForm = ({
     setCategories(newCategories);
     setValue('category', '' as Schema['category']);
   }, [currentType]);
+
+  useEffect(() => {
+    if (selectedTransaction) {
+      setValue('type', selectedTransaction.type);
+      setValue('date', selectedTransaction.date);
+      setValue('category', selectedTransaction.category);
+      setValue('content', selectedTransaction.content);
+      setValue('amount', selectedTransaction.amount);
+    } else {
+      reset({
+        type: 'expense',
+        date: currentDay,
+        amount: 0,
+        category: '' as Schema['category'],
+        content: '',
+      });
+    }
+  }, [selectedTransaction, setValue]);
 
   return (
     <Box
