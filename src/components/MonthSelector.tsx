@@ -19,6 +19,12 @@ const MonthSelector = () => {
     setCurrentMonth(previosMonth);
   };
 
+  const handleDateChange = (newDate: Date | null) => {
+    if (newDate) {
+      setCurrentMonth(newDate);
+    }
+  };
+
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ja}>
       <Box
@@ -32,6 +38,7 @@ const MonthSelector = () => {
           先月
         </Button>
         <DatePicker
+          onChange={handleDateChange}
           value={currentMonth}
           label="年月を選択"
           sx={{ mx: 2, backgroundColor: 'white' }}
