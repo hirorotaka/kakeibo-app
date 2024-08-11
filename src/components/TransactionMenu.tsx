@@ -82,8 +82,10 @@ const TransactionMenu = ({
                   <Card
                     sx={{
                       width: '100%',
-                      backgroundColor: (theme) =>
-                        theme.palette.expenseColor.light,
+                      backgroundColor:
+                        transaction.type === 'income'
+                          ? (theme) => theme.palette.incomeColor.light
+                          : (theme) => theme.palette.expenseColor.light,
                     }}
                   >
                     <CardActionArea>
