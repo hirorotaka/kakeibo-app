@@ -1,14 +1,17 @@
 import { Box } from '@mui/material';
+import { useMemo, useState } from 'react';
 import MonthlySummary from '../components/MonthlySummary';
 import Calendar from '../components/Calendar';
 import TransactionMenu from '../components/TransactionMenu';
 import TransactionForm from '../components/TransactionForm';
-import { useState } from 'react';
-import { format } from 'date-fns';
-import useMonthlyTransactions from '../hooks/useMonthlyTransactions';
 import { Transaction } from '../types';
+import { format } from 'date-fns';
+import { DateClickArg } from '@fullcalendar/interaction';
+import { useAppContext } from '../context/AppContext';
+import useMonthlyTransactions from '../hooks/useMonthlyTransactions';
 
-const Home = () => {
+function Home() {
+  const { isMobile } = useAppContext();
   const monthlyTransactions = useMonthlyTransactions();
 
   const today = format(new Date(), 'yyyy-MM-dd');
@@ -16,30 +19,58 @@ const Home = () => {
   const [isEntryDrawerOpen, setIsEntryDrawerOpen] = useState(false);
   const [selectedTransaction, setSelectedTransaction] =
     useState<Transaction | null>(null);
+  const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   // 1日分のデータを取得する
-  const dailyTransactions = monthlyTransactions.filter((transaction) => {
-    return transaction.date === currentDay;
-  });
+  const dailyTransactions = useMemo(() => {
+    return monthlyTransactions.filter(
+      (transaction) => transaction.date === currentDay
+    );
+  }, [currentDay, monthlyTransactions]);
 
   const closeForm = () => {
-    setIsEntryDrawerOpen(!isEntryDrawerOpen);
     setSelectedTransaction(null);
-  };
 
-  //フォームの開閉処理(内訳追加ボタンを押したとき)
-  const handleAddTransactionForm = () => {
-    if (selectedTransaction) {
-      setSelectedTransaction(null);
+    if (isMobile) {
+      setIsDialogOpen(!isDialogOpen);
     } else {
       setIsEntryDrawerOpen(!isEntryDrawerOpen);
     }
   };
 
+  // フォームの開閉処理
+  const handleAddTransactionForm = () => {
+    if (isMobile) {
+      setIsDialogOpen(true);
+    } else {
+      if (selectedTransaction) {
+        setSelectedTransaction(null);
+      } else {
+        setIsEntryDrawerOpen(!isEntryDrawerOpen);
+      }
+    }
+  };
+
   // 取引が選択された時の処理
   const handleSelectTransaction = (transaction: Transaction) => {
-    setIsEntryDrawerOpen(true);
     setSelectedTransaction(transaction);
+
+    if (isMobile) {
+      setIsDialogOpen(true);
+    } else {
+      setIsEntryDrawerOpen(true);
+    }
+  };
+
+  const handleCloseMobileDrawer = () => {
+    setIsMobileDrawerOpen(false);
+  };
+
+  // 日付を選択したときの処理
+  const handleDateClick = (dateInfo: DateClickArg) => {
+    setCurrentDay(dateInfo.dateStr);
+    setIsMobileDrawerOpen(true);
   };
 
   return (
@@ -51,6 +82,7 @@ const Home = () => {
           setCurrentDay={setCurrentDay}
           currentDay={currentDay}
           today={today}
+          onDateClick={handleDateClick}
         />
       </Box>
       {/* 右側コンテンツ */}
@@ -60,6 +92,8 @@ const Home = () => {
           currentDay={currentDay}
           onAddTransactionForm={handleAddTransactionForm}
           onSelectTransaction={handleSelectTransaction}
+          open={isMobileDrawerOpen}
+          onClose={handleCloseMobileDrawer}
         />
         <TransactionForm
           onCloseForm={closeForm}
@@ -67,10 +101,12 @@ const Home = () => {
           currentDay={currentDay}
           selectedTransaction={selectedTransaction}
           setSelectedTransaction={setSelectedTransaction}
+          isDialogOpen={isDialogOpen}
+          setIsDialogOpen={setIsDialogOpen}
         />
       </Box>
     </Box>
   );
-};
+}
 
 export default Home;

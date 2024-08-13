@@ -4,34 +4,35 @@ import jaLocale from '@fullcalendar/core/locales/ja';
 import '../style/calendar.css';
 import { calculateDailyBalance } from '../utils/financeCalculations';
 import useFullcalender from '../hooks/useFullcalender';
-import interactionPlugin from '@fullcalendar/interaction';
+import interactionPlugin, { DateClickArg } from '@fullcalendar/interaction';
 import useMonthlyTransactions from '../hooks/useMonthlyTransactions';
 import { useAppContext } from '../context/AppContext';
 interface CalendarProps {
   currentDay: string;
   setCurrentDay: React.Dispatch<React.SetStateAction<string>>;
   today: string;
+  onDateClick: (dateInfo: DateClickArg) => void;
 }
 
-const Calendar = ({ setCurrentDay, currentDay, today }: CalendarProps) => {
+const Calendar = ({
+  setCurrentDay,
+  currentDay,
+  today,
+  onDateClick,
+}: CalendarProps) => {
   const monthlyTransactions = useMonthlyTransactions();
   const { setCurrentMonth } = useAppContext();
   // 日付ごとの収支を計算する
   const dailyBalances = calculateDailyBalance(monthlyTransactions);
 
-  const {
-    calendarEvents,
-    renderEventContent,
-    handleDateSet,
-    handleDateClick,
-    backgroundEvent,
-  } = useFullcalender({
-    dailyBalances,
-    setCurrentMonth,
-    setCurrentDay,
-    currentDay,
-    today,
-  });
+  const { calendarEvents, renderEventContent, handleDateSet, backgroundEvent } =
+    useFullcalender({
+      dailyBalances,
+      setCurrentMonth,
+      setCurrentDay,
+      currentDay,
+      today,
+    });
 
   return (
     <div>
@@ -42,7 +43,7 @@ const Calendar = ({ setCurrentDay, currentDay, today }: CalendarProps) => {
         events={[...calendarEvents, backgroundEvent]}
         eventContent={renderEventContent}
         datesSet={handleDateSet}
-        dateClick={handleDateClick}
+        dateClick={onDateClick}
       />
     </div>
   );

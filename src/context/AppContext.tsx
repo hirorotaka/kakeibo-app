@@ -11,6 +11,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '../firebase';
 import { isFirestoreError } from '../utils/errorHandling';
+import { useMediaQuery, useTheme } from '@mui/material';
 
 interface AppContextType {
   transactions: Transaction[];
@@ -26,6 +27,7 @@ interface AppContextType {
     transactionId: string
   ) => Promise<void>;
   isLoading: boolean;
+  isMobile: boolean;
 }
 
 export const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -38,6 +40,8 @@ export const AppcontextProvider = ({
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [isLoading, setIsLoading] = useState(true);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('lg'));
 
   useEffect(() => {
     const fetchTransactions = async () => {
@@ -145,6 +149,7 @@ export const AppcontextProvider = ({
         onDeleteTransaction,
         onUpdateTransaction,
         isLoading,
+        isMobile,
       }}
     >
       {children}

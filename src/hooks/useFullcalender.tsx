@@ -1,6 +1,5 @@
 import { Balance, CalenderContent } from '../types';
 import { EventContentArg, DatesSetArg } from '@fullcalendar/core';
-import { DateClickArg } from '@fullcalendar/interaction';
 import { formatCurrency } from '../utils/formatting';
 import { useTheme } from '@mui/material';
 import { isSameMonth } from 'date-fns';
@@ -68,11 +67,6 @@ const useFullcalender = ({
     }
   };
 
-  // 現在の日付を選択したときの処理
-  const handleDateClick = (dateInfo: DateClickArg) => {
-    setCurrentDay(dateInfo.dateStr);
-  };
-
   // イベントの色を設定する関数
   const backgroundEvent = {
     start: currentDay,
@@ -84,7 +78,6 @@ const useFullcalender = ({
     calendarEvents,
     renderEventContent,
     handleDateSet,
-    handleDateClick,
     backgroundEvent,
   };
 };

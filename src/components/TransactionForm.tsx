@@ -2,6 +2,8 @@ import {
   Box,
   Button,
   ButtonGroup,
+  Dialog,
+  DialogContent,
   FormControl,
   FormHelperText,
   IconButton,
@@ -13,18 +15,25 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
+
 import CloseIcon from '@mui/icons-material/Close'; // 閉じるボタン用のアイコン
-import { Controller, SubmitHandler, useForm } from 'react-hook-form';
+import FastfoodIcon from '@mui/icons-material/Fastfood'; //食事アイコン
+import AlarmIcon from '@mui/icons-material/Alarm'; //日用品アイコン
+import AddHomeIcon from '@mui/icons-material/AddHome'; //住居費アイコン
+import Diversity3Icon from '@mui/icons-material/Diversity3'; //交際費アイコン
+import SportsTennisIcon from '@mui/icons-material/SportsTennis'; //娯楽アイコン
+
+import WorkIcon from '@mui/icons-material/Work'; //給与アイコン
+import AddBusinessIcon from '@mui/icons-material/AddBusiness'; //副収入アイコン
+import SavingsIcon from '@mui/icons-material/Savings'; //お小遣いアイコン
+
 import { zodResolver } from '@hookform/resolvers/zod';
+
+import { Controller, SubmitHandler, useForm } from 'react-hook-form';
+import { ExpenseCategory, IncomeCategory, Transaction } from '../types';
 import { Schema, TransactionSchema } from '../validations/schema';
-import {
-  expenseCategories,
-  formWidth,
-  incomeCategories,
-} from '../utils/constants/formConstants.tsx';
-import { useAppContext } from '../context/AppContext.tsx';
-import { Transaction } from '../types/index.ts';
+import { useAppContext } from '../context/AppContext';
 
 interface TransactionFormProps {
   onCloseForm: () => void;
@@ -34,9 +43,16 @@ interface TransactionFormProps {
   setSelectedTransaction: React.Dispatch<
     React.SetStateAction<Transaction | null>
   >;
+  isDialogOpen: boolean;
+  setIsDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 type IncomeExpenseType = 'income' | 'expense';
+
+interface CategoryItem {
+  label: IncomeCategory | ExpenseCategory;
+  icon: JSX.Element;
+}
 
 const TransactionForm = ({
   onCloseForm,
@@ -44,10 +60,54 @@ const TransactionForm = ({
   currentDay,
   selectedTransaction,
   setSelectedTransaction,
+  isDialogOpen,
+  setIsDialogOpen,
 }: TransactionFormProps) => {
-  const { onSaveTransaction, onDeleteTransaction, onUpdateTransaction } =
-    useAppContext();
-  const [categories, setCategories] = useState(expenseCategories);
+  const {
+    onSaveTransaction,
+    onDeleteTransaction,
+    onUpdateTransaction,
+    isMobile,
+  } = useAppContext();
+  const formWidth = 320;
+
+  const expenseCategories: CategoryItem[] = [
+    {
+      label: '食費',
+      icon: <FastfoodIcon fontSize="small" />,
+    },
+    {
+      label: '日用品',
+      icon: <AlarmIcon fontSize="small" />,
+    },
+    {
+      label: '住居費',
+      icon: <AddHomeIcon fontSize="small" />,
+    },
+    {
+      label: '交際費',
+      icon: <Diversity3Icon fontSize="small" />,
+    },
+    {
+      label: '娯楽',
+      icon: <SportsTennisIcon fontSize="small" />,
+    },
+  ];
+  const incomeCategories: CategoryItem[] = [
+    {
+      label: '給与',
+      icon: <WorkIcon fontSize="small" />,
+    },
+    {
+      label: '副収入',
+      icon: <SavingsIcon fontSize="small" />,
+    },
+    {
+      label: 'お小遣い',
+      icon: <AddBusinessIcon fontSize="small" />,
+    },
+  ];
+
   const {
     control,
     setValue,
@@ -59,77 +119,66 @@ const TransactionForm = ({
     defaultValues: {
       type: 'expense',
       date: currentDay,
-      category: '' as Schema['category'],
-      content: '',
       amount: 0,
+      category: '' as IncomeCategory | ExpenseCategory,
+      content: '',
     },
     resolver: zodResolver(TransactionSchema),
   });
 
-  const onSubmit: SubmitHandler<Schema> = (data) => {
-    if (selectedTransaction) {
-      onUpdateTransaction(data, selectedTransaction.id)
-        .then(() => {
-          console.log('更新しました');
-          setSelectedTransaction(null);
-        })
-        .catch((err) => {
-          console.error('更新に失敗しました', err);
-        });
-    } else {
-      onSaveTransaction(data)
-        .then(() => {
-          console.log('更新しました');
-          setSelectedTransaction(null);
-        })
-        .catch((err) => {
-          console.error('更新に失敗しました', err);
-        });
-    }
+  const [categories, setCategories] = useState(expenseCategories);
 
-    reset({
-      type: 'expense',
-      date: currentDay,
-      amount: 0,
-      category: '' as Schema['category'],
-      content: '',
-    });
-  };
-
-  // 収支タイプを切り替える
   const incomeExpenseToggle = (type: IncomeExpenseType): void => {
     setValue('type', type);
-    setValue('category', '' as Schema['category']);
+    setValue('category', '' as IncomeCategory | ExpenseCategory);
   };
 
-  const handleDelete = () => {
-    if (selectedTransaction) {
-      onDeleteTransaction(selectedTransaction.id);
-      setSelectedTransaction(null);
-    }
-
-    reset({
-      type: 'expense',
-      date: currentDay,
-      amount: 0,
-      category: '' as Schema['category'],
-      content: '',
-    });
-  };
-
-  // 収支タイプを監視
   const currentType = watch('type');
-
-  useEffect(() => {
-    setValue('date', currentDay);
-  }, [currentDay, setValue]);
 
   useEffect(() => {
     const newCategories =
       currentType === 'income' ? incomeCategories : expenseCategories;
     setCategories(newCategories);
-    setValue('category', '' as Schema['category']);
+    setValue('category', '' as IncomeCategory | ExpenseCategory);
   }, [currentType]);
+
+  useEffect(() => {
+    setValue('date', currentDay);
+  }, [currentDay]);
+
+  const onSubmit: SubmitHandler<Schema> = (data) => {
+    console.log(data);
+
+    if (selectedTransaction) {
+      onUpdateTransaction(data, selectedTransaction.id)
+        .then(() => {
+          // console.log('更新しました');
+          setSelectedTransaction(null);
+          if (isMobile) {
+            setIsDialogOpen(false);
+          }
+        })
+        .catch((err) => {
+          console.error(err);
+        });
+    } else {
+      onSaveTransaction(data)
+        .then(() => {
+          console.log('保存しました');
+        })
+        .catch((err) => {
+          console.error(err);
+        });
+    }
+
+    reset({
+      type: 'expense',
+      date: currentDay,
+      amount: 0,
+      category: '' as IncomeCategory | ExpenseCategory,
+      content: '',
+    });
+  };
 
   useEffect(() => {
     if (selectedTransaction) {
@@ -140,7 +189,7 @@ const TransactionForm = ({
         'category',
         categoryExisits
           ? selectedTransaction.category
-          : ('' as Schema['category'])
+          : ('' as IncomeCategory | ExpenseCategory)
       );
     }
   }, [selectedTransaction, categories]);
@@ -149,39 +198,39 @@ const TransactionForm = ({
     if (selectedTransaction) {
       setValue('type', selectedTransaction.type);
       setValue('date', selectedTransaction.date);
-      setValue('content', selectedTransaction.content);
       setValue('amount', selectedTransaction.amount);
+      setValue('content', selectedTransaction.content);
     } else {
       reset({
         type: 'expense',
         date: currentDay,
         amount: 0,
-        category: '' as Schema['category'],
+        category: '' as IncomeCategory | ExpenseCategory,
         content: '',
       });
     }
-  }, [selectedTransaction, setValue]);
+  }, [selectedTransaction]);
 
-  return (
-    <Box
-      sx={{
-        position: 'fixed',
-        top: 64,
-        right: isEntryDrawerOpen ? formWidth : '-2%', // フォームの位置を調整
-        width: formWidth,
-        height: '100%',
-        bgcolor: 'background.paper',
-        zIndex: (theme) => theme.zIndex.drawer - 1,
-        transition: (theme) =>
-          theme.transitions.create('right', {
-            easing: theme.transitions.easing.sharp,
-            duration: theme.transitions.duration.enteringScreen,
-          }),
-        p: 2, // 内部の余白
-        boxSizing: 'border-box', // ボーダーとパディングをwidthに含める
-        boxShadow: '0px 0px 15px -5px #777777',
-      }}
-    >
+  const handleDelete = () => {
+    if (selectedTransaction) {
+      onDeleteTransaction(selectedTransaction.id);
+      if (isMobile) {
+        setIsDialogOpen(false);
+      }
+      setSelectedTransaction(null);
+    }
+
+    reset({
+      type: 'expense',
+      date: currentDay,
+      amount: 0,
+      category: '' as IncomeCategory | ExpenseCategory,
+      content: '',
+    });
+  };
+
+  const formContent = (
+    <>
       {/* 入力エリアヘッダー */}
       <Box display={'flex'} justifyContent={'space-between'} mb={2}>
         <Typography variant="h6">入力</Typography>
@@ -212,8 +261,8 @@ const TransactionForm = ({
                   支出
                 </Button>
                 <Button
-                  variant={field.value === 'income' ? 'contained' : 'outlined'}
                   onClick={() => incomeExpenseToggle('income')}
+                  variant={field.value === 'income' ? 'contained' : 'outlined'}
                 >
                   収入
                 </Button>
@@ -229,14 +278,13 @@ const TransactionForm = ({
                 {...field}
                 label="日付"
                 type="date"
-                InputLabelProps={{
-                  shrink: true,
-                }}
+                InputLabelProps={{ shrink: true }}
                 error={!!errors.date}
                 helperText={errors.date?.message}
               />
             )}
           />
+
           {/* カテゴリ */}
           <Controller
             name="category"
@@ -261,12 +309,15 @@ const TransactionForm = ({
               </FormControl>
             )}
           />
+
           {/* 金額 */}
           <Controller
             name="amount"
             control={control}
             render={({ field }) => (
               <TextField
+                error={!!errors.amount}
+                helperText={errors.amount?.message}
                 {...field}
                 value={field.value === 0 ? '' : field.value}
                 onChange={(e) => {
@@ -275,21 +326,18 @@ const TransactionForm = ({
                 }}
                 label="金額"
                 type="number"
-                error={!!errors.amount}
-                helperText={errors.amount?.message}
               />
             )}
           />
-
           {/* 内容 */}
           <Controller
             name="content"
             control={control}
             render={({ field }) => (
               <TextField
-                {...field}
                 error={!!errors.content}
                 helperText={errors.content?.message}
+                {...field}
                 label="内容"
                 type="text"
               />
@@ -317,7 +365,46 @@ const TransactionForm = ({
           )}
         </Stack>
       </Box>
-    </Box>
+    </>
+  );
+
+  return (
+    <>
+      {isMobile ? (
+        // モバイル版
+        <Dialog
+          open={isDialogOpen}
+          onClose={onCloseForm}
+          fullWidth
+          maxWidth="sm"
+        >
+          <DialogContent>{formContent}</DialogContent>
+        </Dialog>
+      ) : (
+        // PC版
+        <Box
+          sx={{
+            position: 'fixed',
+            top: 64,
+            right: isEntryDrawerOpen ? formWidth : '-2%', // フォームの位置を調整
+            width: formWidth,
+            height: '100%',
+            bgcolor: 'background.paper',
+            zIndex: (theme) => theme.zIndex.drawer - 1,
+            transition: (theme) =>
+              theme.transitions.create('right', {
+                easing: theme.transitions.easing.sharp,
+                duration: theme.transitions.duration.enteringScreen,
+              }),
+            p: 2, // 内部の余白
+            boxSizing: 'border-box', // ボーダーとパディングをwidthに含める
+            boxShadow: '0px 0px 15px -5px #777777',
+          }}
+        >
+          {formContent}
+        </Box>
+      )}
+    </>
   );
 };
 export default TransactionForm;
